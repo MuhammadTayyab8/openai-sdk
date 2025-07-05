@@ -1,7 +1,57 @@
+import os
 import chainlit as cl
+from dotenv import find_dotenv, load_dotenv
+from agents import AsyncOpenAI, OpenAIChatCompletionsModel, RunConfig, Agent, Runner
+import asyncio
+
+load_dotenv(find_dotenv())
+gemini_api_key = os.getenv("GEMINI_API_KEY")
 
 
-@cl.on_message
-async def main(message: cl.Message):
-    response = f"Recieved: {message.content}"
-    await cl.Message(response).send()
+# STEP # 1: PROVIDER
+provider = AsyncOpenAI(
+    api_key=gemini_api_key,
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/" 
+)
+
+
+# STEP # 2: MODEL
+model = OpenAIChatCompletionsModel(
+    model="gemini-2.0-flash", 
+    openai_client=provider
+)
+
+
+# STEP # 3: Configuration
+config = RunConfig(
+    model=model,
+    model_provider=provider,
+    tracing_disabled = True,
+)
+
+
+
+
+# STEP # 4: Agent
+agent = Agent(
+    instructions="you are a helpful agent",
+    name = "Tayyab Agent"
+)
+
+
+user_input = input("Enter Query: ")
+
+async def main():
+    result = await Runner.run(
+        agent,
+        input=user_input,
+        run_config=config
+    )
+
+    print(result.final_output)
+
+
+
+# main()
+asyncio.run(main())
+
