@@ -41,12 +41,29 @@ agent = Agent(
 
 
 
+@cl.on_chat_start
+async def handle_chat_start():
+    cl.user_session.set("history", [])
+    await cl.Message("Hello! I am a Helpful Agent.").send()
+
+
+
+
+
+
+
 
 @cl.on_message
 async def main(message: cl.Message):
+
+    history = cl.user_session.get("history")
+
+    history.append({"role": "user", "content": message.content})
+
+
     result = await Runner.run(
         agent,
-        input=message.content,
+        input=history,
         run_config=config
     )
 
