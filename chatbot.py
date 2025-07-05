@@ -2,7 +2,7 @@ import os
 import chainlit as cl
 from dotenv import find_dotenv, load_dotenv
 from agents import AsyncOpenAI, OpenAIChatCompletionsModel, RunConfig, Agent, Runner
-import asyncio
+
 
 load_dotenv(find_dotenv())
 gemini_api_key = os.getenv("GEMINI_API_KEY")
@@ -39,19 +39,16 @@ agent = Agent(
 )
 
 
-user_input = input("Enter Query: ")
 
-async def main():
+
+
+@cl.on_message
+async def main(message: cl.Message):
     result = await Runner.run(
         agent,
-        input=user_input,
+        input=message.content,
         run_config=config
     )
 
-    print(result.final_output)
-
-
-
-# main()
-asyncio.run(main())
+    await cl.Message(result.final_output).send()
 
